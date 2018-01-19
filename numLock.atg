@@ -1,0 +1,70 @@
+COMPILER numLock
+
+CHARACTERS
+  cifre = "0123456789".
+  pcifre = "123456789".
+  nula = "0".
+  wr  = '\r'.
+  nr  = '\n'.
+
+TOKENS
+  ident  = nula nula pcifre {cifre}.
+  broj = pcifre { cifre }.
+
+
+  COMMENTS FROM ",," TO wr nr
+
+  IGNORE wr + nr
+
+
+
+PRODUCTIONS
+
+
+  numLock = { Definition }  EOF .
+
+
+  Ident = ident .
+
+  ConstVal = broj .
+
+  Definition = SYNC Ident (ArraySize | Statement) .
+
+  Initializator = ( ConstVal | Ident ) .
+
+  ArraySize = [ "/," broj ",/" ] [Initializator {',' Initializator } ] "\n" .
+
+  Statement = SYNC ( StatementExpression 
+                    | IfStatement 
+                    | LoopStatement
+                    | CompoundStatement ) .
+
+  CompoundStatement    = "/" { Statement } "/" .
+
+  IfStatement = "+" Expression Statement [ "++" Statement ] .
+
+  LoopStatement = "*" (ConstVal | Ident) Statement .
+
+  StatementExpression = Expression "\n"  .
+
+  Expression = Conditional { AssignmentOperator Expression }.
+  
+  Conditional          = LogANDExp .
+
+  LogANDExp            = EqualExp   { "09" EqualExp }.
+
+  EqualExp             = RelationExp { ( "011" | "018" ) RelationExp } .
+
+  RelationExp          = AddExp    { ( "06" | "07" | "016" | "017" ) AddExp }.
+
+  AddExp               = MultExp     { ( "02" | "03" ) MultExp } .
+
+  MultExp              = PostFixExp     { ( "04" | "05" ) PostFixExp } .
+
+  PostFixExp           = Primary  { "/," Expression ",/"  } .
+
+  Primary              = Ident | ConstVal .
+
+  AssignmentOperator   =   "01"  | "014" | "015"| "012" | "013" .
+
+END numLock.
