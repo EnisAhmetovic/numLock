@@ -39,7 +39,10 @@ PRODUCTIONS
 	= (. .)
 	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ "); .) .
 
-  Definition = SYNC (Initialize) .
+  Definition  (. Name name; bool isarray; int position;.)
+=  (. isarray=false;.)
+SYNC  (. position=ParseList.length(); .) 
+(Initialize) .
 
   Initialize = VarList '-' {Statement} .
 
