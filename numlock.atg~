@@ -1,0 +1,88 @@
+using namespace std;
+#include <wchar.h>
+typedef wchar_t Name[500];
+#include <string>
+#include <iostream>
+COMPILER numLock
+std::wstring ParseList;
+int scopepos;
+
+CHARACTERS
+  cifre = "0123456789".
+  pcifre = "123456789".
+  nula = "0".
+  wr  = '\r'.
+  nr  = '\n'.
+
+TOKENS
+  ident  = nula nula pcifre {cifre}.
+  broj = pcifre { cifre }.
+
+
+  COMMENTS FROM ",," TO wr nr
+
+  IGNORE wr + nr
+
+
+
+PRODUCTIONS
+
+
+  numLock = 	(. ParseList=L"(numLock "; scopepos=0; .)
+	{ Definition }  
+	EOF 	(. ParseList+=L")"; std::wcout<<ParseList; .) .
+
+  Ident <Name name>
+	= ident (. wcscpy(name, t->val); .).
+
+  ConstVal (.Name name.)
+	= (. .)
+	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ "); .) .
+
+  Definition = SYNC (Initialize) .
+
+  Initialize = VarList '-' {Statement} .
+
+  VarList (. Name name; .)
+	= Ident<name>  (. wprintf(L"VarList %ls \n", name); .)
+	[ "/," broj ",/" ]  {',' VarList } .
+
+  Statement = SYNC ( StatementExpression 
+                    | IfStatement 
+                    | LoopStatement ) .
+
+  CompoundStatement    = '/' { Statement } '/' .
+
+  IfStatement = "+" Expression CompoundStatement [ "++" CompoundStatement ] .
+
+  LoopStatement (. Name name; .)
+	= "*" (ConstVal | Ident<name>  (. wprintf(L"LoopStatement %ls \n", name); .) 
+	) CompoundStatement .
+
+  StatementExpression = Expression '-' .
+
+  Expression = Conditional.
+  
+  Conditional          = AssignmentExp .
+
+  AssignmentExp        = LogANDExp   { AssignmentOperator LogANDExp }.
+
+  LogANDExp            = EqualExp   { "09" EqualExp }.
+
+  EqualExp             = RelationExp { ( "011" | "018" ) RelationExp } .
+
+  RelationExp          = AddExp    { ( "06" | "07" | "016" | "017" ) AddExp }.
+
+  AddExp               = MultExp     { ( "02" | "03" ) MultExp } .
+
+  MultExp              = PostFixExp     { ( "04" | "05" ) PostFixExp } .
+
+  PostFixExp           = Primary  { "/," Expression ",/"  } .
+
+  Primary (. Name name; .)
+              = Ident<name>  (. wprintf(L"Primary %ls \n", name); .)
+		| ConstVal .
+
+  AssignmentOperator   =   "01"  | "014" | "015"| "012" | "013" .
+
+END numLock.
