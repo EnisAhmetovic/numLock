@@ -4,4 +4,4 @@ Static programming language whose code can be written with the use of only nupad
 Syntax analisator -> done  
 Semantic analisator -> done  
 Abstract tree -> in-progress  
-Code generator -> On wait  
+Code generator -> on wait  
