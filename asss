@@ -1,0 +1,8 @@
+ AssignmentOperator  (. int position; .)
+   =   (. position=ParseList.length(); .)
+    ("01" (. ParseList.insert(position,L"(MOV " ); .)
+    | "014" (. ParseList.insert(position,L"(MULTMOV " ); .)
+    | "015" (. ParseList.insert(position,L"(DIVMOV " ); .)
+    | "012" (. ParseList.insert(position,L"(ADDMOV " ); .)
+    | "013"(. ParseList.insert(position,L"(SUBMOV " ); .)) 
+     (. ParseList.append(L") " );.).

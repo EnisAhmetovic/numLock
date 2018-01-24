@@ -644,37 +644,37 @@ Token* Scanner::NextToken() {
 			{t->kind = 10; break;}
 		case 9:
 			case_9:
-			{t->kind = 11; break;}
+			{t->kind = 12; break;}
 		case 10:
 			case_10:
-			{t->kind = 12; break;}
+			{t->kind = 13; break;}
 		case 11:
 			case_11:
-			{t->kind = 13; break;}
+			{t->kind = 14; break;}
 		case 12:
 			case_12:
-			{t->kind = 14; break;}
+			{t->kind = 15; break;}
 		case 13:
 			case_13:
-			{t->kind = 15; break;}
+			{t->kind = 16; break;}
 		case 14:
 			case_14:
-			{t->kind = 16; break;}
+			{t->kind = 17; break;}
 		case 15:
 			case_15:
-			{t->kind = 17; break;}
+			{t->kind = 18; break;}
 		case 16:
 			case_16:
-			{t->kind = 18; break;}
+			{t->kind = 19; break;}
 		case 17:
 			case_17:
-			{t->kind = 19; break;}
+			{t->kind = 20; break;}
 		case 18:
 			case_18:
-			{t->kind = 20; break;}
+			{t->kind = 21; break;}
 		case 19:
 			case_19:
-			{t->kind = 21; break;}
+			{t->kind = 22; break;}
 		case 20:
 			case_20:
 			{t->kind = 23; break;}
@@ -689,14 +689,14 @@ Token* Scanner::NextToken() {
 			{t->kind = 26; break;}
 		case 24:
 			if (ch == L'0') {AddCh(); goto case_1;}
-			else if (ch == L'9') {AddCh(); goto case_9;}
 			else if (ch == L'1') {AddCh(); goto case_28;}
-			else if (ch == L'6') {AddCh(); goto case_12;}
-			else if (ch == L'7') {AddCh(); goto case_13;}
-			else if (ch == L'2') {AddCh(); goto case_16;}
-			else if (ch == L'3') {AddCh(); goto case_17;}
-			else if (ch == L'4') {AddCh(); goto case_18;}
-			else if (ch == L'5') {AddCh(); goto case_19;}
+			else if (ch == L'9') {AddCh(); goto case_13;}
+			else if (ch == L'6') {AddCh(); goto case_16;}
+			else if (ch == L'7') {AddCh(); goto case_17;}
+			else if (ch == L'2') {AddCh(); goto case_20;}
+			else if (ch == L'3') {AddCh(); goto case_21;}
+			else if (ch == L'4') {AddCh(); goto case_22;}
+			else if (ch == L'5') {AddCh(); goto case_23;}
 			else {goto case_0;}
 		case 25:
 			recEnd = pos; recKind = 7;
@@ -712,16 +712,16 @@ Token* Scanner::NextToken() {
 			else {t->kind = 8; break;}
 		case 28:
 			case_28:
-			recEnd = pos; recKind = 22;
-			if (ch == L'1') {AddCh(); goto case_10;}
-			else if (ch == L'8') {AddCh(); goto case_11;}
-			else if (ch == L'6') {AddCh(); goto case_14;}
-			else if (ch == L'7') {AddCh(); goto case_15;}
-			else if (ch == L'4') {AddCh(); goto case_20;}
-			else if (ch == L'5') {AddCh(); goto case_21;}
-			else if (ch == L'2') {AddCh(); goto case_22;}
-			else if (ch == L'3') {AddCh(); goto case_23;}
-			else {t->kind = 22; break;}
+			recEnd = pos; recKind = 11;
+			if (ch == L'4') {AddCh(); goto case_9;}
+			else if (ch == L'5') {AddCh(); goto case_10;}
+			else if (ch == L'2') {AddCh(); goto case_11;}
+			else if (ch == L'3') {AddCh(); goto case_12;}
+			else if (ch == L'1') {AddCh(); goto case_14;}
+			else if (ch == L'8') {AddCh(); goto case_15;}
+			else if (ch == L'6') {AddCh(); goto case_18;}
+			else if (ch == L'7') {AddCh(); goto case_19;}
+			else {t->kind = 11; break;}
 
 	}
 	AppendVal(t);

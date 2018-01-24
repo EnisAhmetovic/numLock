@@ -4,6 +4,7 @@ typedef wchar_t Name[500];
 #include <string>
 #include <iostream>
 COMPILER numLock
+#include "methods.inc"
 std::wstring ParseList;
 int scopepos;
 
@@ -35,28 +36,29 @@ PRODUCTIONS
   Ident <Name name>
 	= ident (. wcscpy(name, t->val); .).
 
-  ConstVal (.Name name.)
+  ConstVal (.Name name; .)
 	= (. .)
-	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ "); .) .
+	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ)"); .) .
 
   Definition  (. Name name; bool isarray; int position;.)
   =  (. isarray=false;.)
   SYNC  (. position=ParseList.length(); .) 
-  VarList<isarray> 
-  (. ParseList.insert(position,isarray?L"(GARRDEF ":L"(GVARDEF ") ; ParseList.append(L") " ); .)
-  '-' {Statement} .
+  VarList<isarray> '-' {Statement} .
 
 
-  VarList<bool & isarray> (. Name name; .)  (. int position; .) 
-	= (. isarray=false; .) (. position=ParseList.length(); .) 
-      Ident<name>  (. ParseList.insert(position,L"(INIT " ); ParseList.append(L") " ); .)
+  VarList<bool & isarray> (. Name name; int position; .) 
+	= (. isarray=false; position=ParseList.length(); .) 
+      Ident<name>
       [ "/," broj  
-                   (. isarray=true; ParseList.append(L"(ASIZE "); .)
-                   (. ParseList.append(t->val); ParseList.append(L")") ;.)
+                   (. isarray=true; ParseList.append(L"(GARRDEF (ASIZE "); .)
+                   (. ParseList.append(t->val); ParseList.append(L")(NAME ") ;
+		ParseList.append(name); ParseList.append(L")) "); .)
       ",/" ]  
-      {',' VarList<isarray> 
-                   (. ParseList.insert(position,isarray?L"(GARRDEF ":L"(GVARDEF ") ; ParseList.append(L") " ); .) 
-      } .
+	(. ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
+	ParseList.append(isarray?L"":(name));
+	ParseList.append(isarray?L"":L")) "); .) 
+      
+	{',' VarList<isarray>  } .
       
 
   Statement (. int position; .)
@@ -74,7 +76,7 @@ PRODUCTIONS
              Expression CompoundStatement [ "++" CompoundStatement  (. haselse=true; .) ] 
             (. ParseList.insert(position,haselse? L"(IFELSE ": L"(IF ");ParseList.append(L")" );  .).
 
-  LoopStatement (. Name name; .) (. int position; .)
+  LoopStatement (. Name name; int position; .)
 	= (. position=ParseList.length(); .) 
   "*" (ConstVal | Ident<name>  (. wprintf(L"LoopStatement %ls \n", name); .) 
 	) CompoundStatement  (. ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); .).
@@ -162,13 +164,5 @@ PRODUCTIONS
                (. wprintf(L"Primary %ls \n", name); .)
 		| ConstVal .
 
-  AssignmentOperator  (. int position; .)
-   =   (. position=ParseList.length(); .)
-    ("01" (. ParseList.insert(position,L"(MOV " ); .)
-    | "014" (. ParseList.insert(position,L"(MULTMOV " ); .)
-    | "015" (. ParseList.insert(position,L"(DIVMOV " ); .)
-    | "012" (. ParseList.insert(position,L"(ADDMOV " ); .)
-    | "013"(. ParseList.insert(position,L"(SUBMOV " ); .)) 
-     (. ParseList.append(L") " );.).
 
 END numLock.

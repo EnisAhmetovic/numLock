@@ -30,6 +30,11 @@ Coco/R itself) does not fall under the GNU General Public License.
 #if !defined(COCO_PARSER_H__)
 #define COCO_PARSER_H__
 
+using namespace std;
+#include <wchar.h>
+typedef wchar_t Name[500];
+#include <string>
+#include <iostream>
 
 
 #include "Scanner.h"
@@ -76,9 +81,8 @@ public:
 	Token *t;			// last recognized token
 	Token *la;			// lookahead token
 
-#include <wchar.h>
-typedef wchar_t Name[500];
-
+std::wstring ParseList;
+int scopepos;
 
 
 
@@ -90,18 +94,15 @@ typedef wchar_t Name[500];
 	void Definition();
 	void Ident(Name name);
 	void ConstVal();
-	void Initialize();
-	void VarList();
+	void VarList(bool & isarray);
 	void Statement();
 	void StatementExpression();
 	void IfStatement();
 	void LoopStatement();
 	void CompoundStatement();
 	void Expression();
-	void Conditional();
 	void AssignmentExp();
 	void LogANDExp();
-	void AssignmentOperator();
 	void EqualExp();
 	void RelationExp();
 	void AddExp();
