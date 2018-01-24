@@ -29,16 +29,17 @@ TOKENS
 PRODUCTIONS
 
 
-  numLock = 	(. ParseList=L"(numLock "; scopepos=0; .)
+  numLock = 	(. ParseList=L"(NUMLOCK "; scopepos=0; .)
 	{ Definition }  
-	EOF 	(. ParseList+=L")"; std::wcout<<ParseList; .) .
+	EOF 	(. ParseList+=L")"; Compile(0,0); std::wcout<<ParseList; .) .
 
   Ident <Name name>
 	= ident (. wcscpy(name, t->val); .).
 
   ConstVal (.Name name; .)
 	= (. .)
-	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ)"); .) .
+	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ ");
+		ParseList.append(name); ParseList.append(L")"); .) .
 
   Definition  (. Name name; bool isarray; int position;.)
   =  (. isarray=false;.)
@@ -79,7 +80,8 @@ PRODUCTIONS
 
   LoopStatement (. Name name; int position; .)
 	= (. position=ParseList.length(); .) 
-  "*" (ConstVal | Ident<name>  (. wprintf(L"LoopStatement %ls \n", name); .) 
+  "*" (ConstVal | Ident<name> (. if (!IsDeclaredGlobal(name))  UndecErr(name) ; .)
+(. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.)  
 	) CompoundStatement  (. ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); .).
 
   StatementExpression = Expression '-' .
@@ -90,18 +92,23 @@ PRODUCTIONS
         = (. position=ParseList.length(); .) 
         LogANDExp   
         { ("01" AssignmentExp
+		(. if(!(Assignable(position))) { SemErr(L"Not assignable");} .)
                 (. ParseList.insert(position,L"(MOV " ); .)
                 (. ParseList.append(L") " );.)
         | "014" AssignmentExp 
+		(. if(!(Assignable(position))) { SemErr(L"Not assignable");} .)
                 (. ParseList.insert(position,L"(MULTMOV " ); .)
                 (. ParseList.append(L") " );.)
         | "015" AssignmentExp 
+		(. if(!(Assignable(position))) { SemErr(L"Not assignable");} .)
                 (. ParseList.insert(position,L"(DIVMOV " ); .)
                 (. ParseList.append(L") " );.)
         | "012" AssignmentExp 
+		(. if(!(Assignable(position))) { SemErr(L"Not assignable");} .)
                 (. ParseList.insert(position,L"(ADDMOV " ); .)
                 (. ParseList.append(L") " );.)
         | "013" AssignmentExp 
+		(. if(!(Assignable(position))) { SemErr(L"Not assignable");} .)
                 (. ParseList.insert(position,L"(SUBMOV " ); .)
                 (. ParseList.append(L") " );.)
         )}.
@@ -161,8 +168,9 @@ PRODUCTIONS
                 (. ParseList.append(L") " );.) } .
 
   Primary (. Name name; int position; .)
-              = Ident<name>  (. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.)
-               (. wprintf(L"Primary %ls \n", name); .)
+              = Ident<name>  
+(. if (!IsDeclaredGlobal(name))  UndecErr(name) ; .)
+(. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.)
 		| ConstVal .
 
 

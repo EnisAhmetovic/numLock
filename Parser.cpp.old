@@ -89,12 +89,12 @@ bool Parser::WeakSeparator(int n, int syFol, int repFol) {
 }
 
 void Parser::numLock() {
-		ParseList=L"(numLock "; scopepos=0; 
+		ParseList=L"(NUMLOCK "; scopepos=0; 
 		while (la->kind == 1) {
 			Definition();
 		}
 		Expect(0);
-		ParseList+=L")"; std::wcout<<ParseList; 
+		ParseList+=L")"; int iluud=0; Compile(0,iluud); std::wcout<<ParseList; 
 }
 
 void Parser::Definition() {
@@ -118,7 +118,8 @@ void Parser::ConstVal() {
 		Name name; 
 		
 		Expect(2);
-		wcscpy(name, t->val); ParseList.append(L"(BROJ)"); 
+		wcscpy(name, t->val); ParseList.append(L"(BROJ ");
+		ParseList.append(name); ParseList.append(L")"); 
 }
 
 void Parser::VarList(bool & isarray) {
@@ -184,7 +185,8 @@ void Parser::LoopStatement() {
 			ConstVal();
 		} else if (la->kind == 1) {
 			Ident(name);
-			wprintf(L"LoopStatement %ls \n", name); 
+			if (!IsDeclaredGlobal(name))  UndecErr(name) ; 
+			ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );
 		} else SynErr(31);
 		CompoundStatement();
 		ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); 
@@ -212,26 +214,31 @@ void Parser::AssignmentExp() {
 			if (la->kind == 11) {
 				Get();
 				AssignmentExp();
+				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(MOV " ); 
 				ParseList.append(L") " );
 			} else if (la->kind == 12) {
 				Get();
 				AssignmentExp();
+				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(MULTMOV " ); 
 				ParseList.append(L") " );
 			} else if (la->kind == 13) {
 				Get();
 				AssignmentExp();
+				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(DIVMOV " ); 
 				ParseList.append(L") " );
 			} else if (la->kind == 14) {
 				Get();
 				AssignmentExp();
+				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(ADDMOV " ); 
 				ParseList.append(L") " );
 			} else {
 				Get();
 				AssignmentExp();
+				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(SUBMOV " ); 
 				ParseList.append(L") " );
 			}
@@ -353,8 +360,8 @@ void Parser::Primary() {
 		Name name; int position; 
 		if (la->kind == 1) {
 			Ident(name);
+			if (!IsDeclaredGlobal(name))  UndecErr(name) ; 
 			ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );
-			wprintf(L"Primary %ls \n", name); 
 		} else if (la->kind == 2) {
 			ConstVal();
 		} else SynErr(32);
