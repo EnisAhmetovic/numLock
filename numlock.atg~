@@ -4,6 +4,7 @@ typedef wchar_t Name[500];
 #include <string>
 #include <iostream>
 COMPILER numLock
+#include "methods.inc"
 std::wstring ParseList;
 int scopepos;
 
@@ -47,11 +48,12 @@ PRODUCTIONS
 
   VarList<bool & isarray> (. Name name; int position; .) 
 	= (. isarray=false; position=ParseList.length(); .) 
-      Ident<name>
+      Ident<name> (. if (IsDeclaredGlobal(name))  AlreadyErr(name) ; .)
       [ "/," broj  
-                   (. isarray=true; ParseList.append(L"(GARRDEF (ASIZE "); .)
-                   (. ParseList.append(t->val); ParseList.append(L")(NAME ") ;
-		ParseList.append(name); ParseList.append(L")) "); .)
+                   (. isarray=true; ParseList.append(L"(GARRDEF (NAME "); 
+                    ParseList.append(name); ParseList.append(L")(ASIZE "); 
+                    ParseList.append(t->val); ParseList.append(L")) ") ; .)
+		
       ",/" ]  
 	(. ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
 	ParseList.append(isarray?L"":(name));

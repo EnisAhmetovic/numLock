@@ -81,6 +81,7 @@ public:
 	Token *t;			// last recognized token
 	Token *la;			// lookahead token
 
+#include "methods.inc"
 std::wstring ParseList;
 int scopepos;
 

@@ -125,12 +125,13 @@ void Parser::VarList(bool & isarray) {
 		Name name; int position; 
 		isarray=false; position=ParseList.length(); 
 		Ident(name);
+		if (IsDeclaredGlobal(name))  AlreadyErr(name) ; 
 		if (la->kind == 4) {
 			Get();
 			Expect(2);
-			isarray=true; ParseList.append(L"(GARRDEF (ASIZE "); 
-			ParseList.append(t->val); ParseList.append(L")(NAME ") ;
-			ParseList.append(name); ParseList.append(L")) "); 
+			isarray=true; ParseList.append(L"(GARRDEF (NAME "); 
+			ParseList.append(name); ParseList.append(L")(ASIZE "); 
+			ParseList.append(t->val); ParseList.append(L")) ") ; 
 			Expect(5);
 		}
 		ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
@@ -353,7 +354,6 @@ void Parser::Primary() {
 		if (la->kind == 1) {
 			Ident(name);
 			ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );
-			wprintf(L"Primary %ls \n", name); 
 		} else if (la->kind == 2) {
 			ConstVal();
 		} else SynErr(32);

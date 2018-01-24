@@ -52,7 +52,7 @@ PRODUCTIONS
       [ "/," broj  
                    (. isarray=true; ParseList.append(L"(GARRDEF (NAME "); 
                     ParseList.append(name); ParseList.append(L")(ASIZE "); 
-                    ParseList.append(t->val); ParseList.append(L")) ") ;
+                    ParseList.append(t->val); ParseList.append(L")) ") ; .)
 		
       ",/" ]  
 	(. ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
@@ -162,7 +162,6 @@ PRODUCTIONS
 
   Primary (. Name name; int position; .)
               = Ident<name>  (. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.)
-               (. wprintf(L"Primary %ls \n", name); .)
 		| ConstVal .
 
 
