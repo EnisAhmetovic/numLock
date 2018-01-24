@@ -40,52 +40,135 @@ PRODUCTIONS
 	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ "); .) .
 
   Definition  (. Name name; bool isarray; int position;.)
-=  (. isarray=false;.)
-SYNC  (. position=ParseList.length(); .) 
-(Initialize) .
+  =  (. isarray=false;.)
+  SYNC  (. position=ParseList.length(); .) 
+  VarList<isarray> 
+  (. ParseList.insert(position,isarray?L"(GARRDEF ":L"(GVARDEF ") ; ParseList.append(L") " ); .)
+  '-' {Statement} .
 
-  Initialize = VarList '-' {Statement} .
 
-  VarList (. Name name; .)
-	= Ident<name>  (. wprintf(L"VarList %ls \n", name); .)
-	[ "/," broj ",/" ]  {',' VarList } .
+  VarList<bool & isarray> (. Name name; .)  (. int position; .) 
+	= (. isarray=false; .) (. position=ParseList.length(); .) 
+      Ident<name>  (. ParseList.insert(position,L"(INIT " ); ParseList.append(L") " ); .)
+      [ "/," broj  
+                   (. isarray=true; ParseList.append(L"(ASIZE "); .)
+                   (. ParseList.append(t->val); ParseList.append(L")") ;.)
+      ",/" ]  
+      {',' VarList<isarray> 
+                   (. ParseList.insert(position,isarray?L"(GARRDEF ":L"(GVARDEF ") ; ParseList.append(L") " ); .) 
+      } .
+      
 
-  Statement = SYNC ( StatementExpression 
+  Statement (. int position; .)
+  = SYNC (. position=ParseList.length(); .) 
+  ( StatementExpression 
                     | IfStatement 
                     | LoopStatement ) .
 
-  CompoundStatement    = '/' { Statement } '/' .
+  CompoundStatement    = '/' (. ParseList.append(L"(BLOCK "); .)
+                     { Statement } '/'  (. ParseList.append(L") "); .).
 
-  IfStatement = "+" Expression CompoundStatement [ "++" CompoundStatement ] .
+  IfStatement (. int position; bool haselse;.) 
+            = (. haselse=false; .)
+            "+" (. position=ParseList.length(); .) 
+             Expression CompoundStatement [ "++" CompoundStatement  (. haselse=true; .) ] 
+            (. ParseList.insert(position,haselse? L"(IFELSE ": L"(IF ");ParseList.append(L")" );  .).
 
-  LoopStatement (. Name name; .)
-	= "*" (ConstVal | Ident<name>  (. wprintf(L"LoopStatement %ls \n", name); .) 
-	) CompoundStatement .
+  LoopStatement (. Name name; .) (. int position; .)
+	= (. position=ParseList.length(); .) 
+  "*" (ConstVal | Ident<name>  (. wprintf(L"LoopStatement %ls \n", name); .) 
+	) CompoundStatement  (. ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); .).
 
   StatementExpression = Expression '-' .
 
-  Expression = Conditional.
-  
-  Conditional          = AssignmentExp .
+  Expression = AssignmentExp.
 
-  AssignmentExp        = LogANDExp   { AssignmentOperator LogANDExp }.
+  AssignmentExp  (. int position; .)       
+        = (. position=ParseList.length(); .) 
+        LogANDExp   
+        { ("01" AssignmentExp
+                (. ParseList.insert(position,L"(MOV " ); .)
+                (. ParseList.append(L") " );.)
+        | "014" AssignmentExp 
+                (. ParseList.insert(position,L"(MULTMOV " ); .)
+                (. ParseList.append(L") " );.)
+        | "015" AssignmentExp 
+                (. ParseList.insert(position,L"(DIVMOV " ); .)
+                (. ParseList.append(L") " );.)
+        | "012" AssignmentExp 
+                (. ParseList.insert(position,L"(ADDMOV " ); .)
+                (. ParseList.append(L") " );.)
+        | "013" AssignmentExp 
+                (. ParseList.insert(position,L"(SUBMOV " ); .)
+                (. ParseList.append(L") " );.)
+        )}.
 
-  LogANDExp            = EqualExp   { "09" EqualExp }.
+  LogANDExp    (. int position; .) 
+      = (. position=ParseList.length(); .)
+      EqualExp   { "09"  EqualExp 
+      (. ParseList.insert(position,L"(AND " ); .)
+      (. ParseList.append(L") " );.)}.
 
-  EqualExp             = RelationExp { ( "011" | "018" ) RelationExp } .
+  EqualExp     (. int position; .)         
+  = (. position=ParseList.length(); .)
+   RelationExp { ( "011" RelationExp
+                (. ParseList.insert(position,L"(EQU " ); .)
+                (. ParseList.append(L") " );.) 
+                | "018" RelationExp
+                (. ParseList.insert(position,L"(NEQU " ); .)
+                (. ParseList.append(L") " );.) ) } .
 
-  RelationExp          = AddExp    { ( "06" | "07" | "016" | "017" ) AddExp }.
+  RelationExp   (. int position; .)        
+  = (. position=ParseList.length(); .)
+   AddExp    { ( "06" AddExp
+                (. ParseList.insert(position,L"(LESSTHAN " ); .)
+                (. ParseList.append(L") " );.)
+                | "07" AddExp
+                (. ParseList.insert(position,L"(GREATERTHAN " ); .)
+                (. ParseList.append(L") " );.)
+                | "016" AddExp
+                (. ParseList.insert(position,L"(LESSEQUTHAN " ); .)
+                (. ParseList.append(L") " );.)
+                | "017" AddExp
+                (. ParseList.insert(position,L"(GREATEREQUTHAN " ); .)
+                (. ParseList.append(L") " );.)) }.
 
-  AddExp               = MultExp     { ( "02" | "03" ) MultExp } .
+  AddExp      (. int position; .)         
+   = (. position=ParseList.length(); .)
+   MultExp     { ( "02" MultExp              
+                (. ParseList.insert(position,L"(ADD " ); .)
+                (. ParseList.append(L") " );.)
+                | "03" MultExp                                  
+                (. ParseList.insert(position,L"(SUB " ); .)
+                (. ParseList.append(L") " );.)) } .
 
-  MultExp              = PostFixExp     { ( "04" | "05" ) PostFixExp } .
+  MultExp    (. int position; .)          
+   = (. position=ParseList.length(); .)
+   PostFixExp     { ( "04" PostFixExp
+                (. ParseList.insert(position,L"(MUL " ); .)
+                (. ParseList.append(L") " );.)
+                | "05" PostFixExp
+                (. ParseList.insert(position,L"(DIV " ); .)
+                (. ParseList.append(L") " );.)) } .
 
-  PostFixExp           = Primary  { "/," Expression ",/"  } .
+  PostFixExp   (. int position; .)        
+   = (. position=ParseList.length(); .)
+   Primary  { "/," Expression ",/" 
+                (. ParseList.insert(position,L"(INDEX " ); .)
+                (. ParseList.append(L") " );.) } .
 
-  Primary (. Name name; .)
-              = Ident<name>  (. wprintf(L"Primary %ls \n", name); .)
+  Primary (. Name name; int position; .)
+              = Ident<name>  (. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.)
+               (. wprintf(L"Primary %ls \n", name); .)
 		| ConstVal .
 
-  AssignmentOperator   =   "01"  | "014" | "015"| "012" | "013" .
+  AssignmentOperator  (. int position; .)
+   =   (. position=ParseList.length(); .)
+    ("01" (. ParseList.insert(position,L"(MOV " ); .)
+    | "014" (. ParseList.insert(position,L"(MULTMOV " ); .)
+    | "015" (. ParseList.insert(position,L"(DIVMOV " ); .)
+    | "012" (. ParseList.insert(position,L"(ADDMOV " ); .)
+    | "013"(. ParseList.insert(position,L"(SUBMOV " ); .)) 
+     (. ParseList.append(L") " );.).
 
 END numLock.
