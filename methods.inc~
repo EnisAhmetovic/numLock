@@ -572,8 +572,7 @@ else if (nodename== L"BROJ") {
 }
 else if (nodename== L"GVARDEF") { 
 	z=ElemPos(position,1);
-	data << L" v" << GetElemName(z,1) << " resd 1" << endl;
-	ispis << L" MOV [v" << GetElemName(z,1) <<"], 0" << endl ;
+	data << L" v" << GetElemName(z,1) << " DD 0" << endl;
 }
 else if (nodename== L"LOOP") { 
 	z=ElemPos(position,1);

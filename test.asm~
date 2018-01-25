@@ -1,0 +1,9 @@
+%include "asm_io.inc"
+section .data
+
+ v005 DD 0
+section .text
+ global _start
+_start:
+RET
+

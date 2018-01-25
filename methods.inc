@@ -168,7 +168,7 @@ else if (nodename== L"ADDMOV") {
 		Compile(q,brojac,ispis,data);
 		ispis << L" POP EBX"<< endl;
 		ispis << L" ADD EAX,EBX"<< endl;
-		ispis << L" MOV [EBX],EAX"<< endl;
+		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;
 	}
 	
 }

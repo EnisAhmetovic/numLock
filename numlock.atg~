@@ -40,7 +40,7 @@ PRODUCTIONS
 		int iluud=0;
 		Compile(0,iluud, text, data); std::wcout<<ParseList;
 		std::ofstream myfile("test.asm", std::ofstream::binary);
-		text << endl << "section .bss" << endl << endl << data.str();	
+		text << endl << "section .data" << endl << endl << data.str();	
 		wstring ws(&text.str()[0]);
 		string stsr(ws.begin(),ws.end());
 		myfile.write(&stsr[0],stsr.size());	

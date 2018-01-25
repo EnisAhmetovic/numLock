@@ -97,12 +97,13 @@ void Parser::numLock() {
 		ParseList+=L")"; wstringstream data; wstringstream text;
 		text << "%include \"asm_io.inc\"" << endl;		
 		text << L"section .text" << endl;
-		text << L" global _start" << endl << L"_start:" << endl;
+		text << L" global _start" << endl << L"_start:" << endl;	
+		data << L"section .data" << endl;
 		int iluud=0;
 		Compile(0,iluud, text, data); std::wcout<<ParseList;
 		std::ofstream myfile("test.asm", std::ofstream::binary);
-		text << endl << "section .data" << endl << endl << data.str();	
-		wstring ws(&text.str()[0]);
+		data << endl << text.str() << L"INT 80h" << endl << L"MOV EAX,1" << endl << L"MOV EBX,0" << endl << L"INT 80h;";	
+		wstring ws(&data.str()[0]);
 		string stsr(ws.begin(),ws.end());
 		myfile.write(&stsr[0],stsr.size());	
 		myfile.close(); 
