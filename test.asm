@@ -1,0 +1,32 @@
+%include "asm_io.inc"
+section .text
+ global _start
+_start:
+ MOV DWORD [v005],6
+ MOV EAX, [v005]
+ ADD EAX,423
+ PUSH EAX
+ POP EAX
+ MOV [EBX],EAX
+ MOV EAX, [v005]
+ ADD EAX,3
+ MOV [v005],EAX
+ MOV EAX, [v005]
+ CMP EAX,5
+ JNE KRAJ1
+ MOV DWORD [v005],5
+KRAJ1: 
+ MOV CX,5
+LOOPSTART2: 
+ PUSH CX
+ MOV EAX, [v005]
+ ADD EAX,1
+ MOV [v005],EAX
+ POP CX
+ DEC CX
+ JNZ LOOPSTART2
+ MOV DWORD [EBX],1
+
+section .data
+
+ v005 DD 0

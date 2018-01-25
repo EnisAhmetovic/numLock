@@ -34,6 +34,8 @@ using namespace std;
 #include <wchar.h>
 typedef wchar_t Name[500];
 #include <string>
+#include <sstream>
+#include <fstream>
 #include <iostream>
 
 

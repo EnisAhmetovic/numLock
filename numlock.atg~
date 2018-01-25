@@ -2,6 +2,8 @@ using namespace std;
 #include <wchar.h>
 typedef wchar_t Name[500];
 #include <string>
+#include <sstream>
+#include <fstream>
 #include <iostream>
 COMPILER numLock
 #include "methods.inc"
@@ -31,7 +33,18 @@ PRODUCTIONS
 
   numLock = 	(. ParseList=L"(NUMLOCK "; scopepos=0; .)
 	{ Definition }  
-	EOF 	(. ParseList+=L")"; Compile(0,0); std::wcout<<ParseList; .) .
+	EOF 	(. ParseList+=L")"; wstringstream data; wstringstream text;
+		text << "%include \"asm_io.inc\"" << endl;		
+		text << L"section .text" << endl;
+		text << L" global _start" << endl << L"_start:" << endl;
+		int iluud=0;
+		Compile(0,iluud, text, data); std::wcout<<ParseList;
+		std::ofstream myfile("test.asm", std::ofstream::binary);
+		text << endl << "section .bss" << endl << endl << data.str();	
+		wstring ws(&text.str()[0]);
+		string stsr(ws.begin(),ws.end());
+		myfile.write(&stsr[0],stsr.size());	
+		myfile.close(); .) .
 
   Ident <Name name>
 	= ident (. wcscpy(name, t->val); .).

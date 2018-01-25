@@ -94,7 +94,18 @@ void Parser::numLock() {
 			Definition();
 		}
 		Expect(0);
-		ParseList+=L")"; int iluud=0; Compile(0,iluud); std::wcout<<ParseList; 
+		ParseList+=L")"; wstringstream data; wstringstream text;
+		text << "%include \"asm_io.inc\"" << endl;		
+		text << L"section .text" << endl;
+		text << L" global _start" << endl << L"_start:" << endl;
+		int iluud=0;
+		Compile(0,iluud, text, data); std::wcout<<ParseList;
+		std::ofstream myfile("test.asm", std::ofstream::binary);
+		text << endl << "section .bss" << endl << endl << data.str();	
+		wstring ws(&text.str()[0]);
+		string stsr(ws.begin(),ws.end());
+		myfile.write(&stsr[0],stsr.size());	
+		myfile.close(); 
 }
 
 void Parser::Definition() {
