@@ -95,7 +95,7 @@ void Parser::numLock() {
 		}
 		Expect(0);
 		ParseList+=L")"; wstringstream data; wstringstream text;
-		text << "%include \"asm_io.inc\"" << endl;		
+		data << "%include \"asm_io.inc\"" << endl;		
 		text << L"section .text" << endl;
 		text << L" global _start" << endl << L"_start:" << endl;	
 		data << L"section .data" << endl;
@@ -110,11 +110,10 @@ void Parser::numLock() {
 }
 
 void Parser::Definition() {
-		Name name; bool isarray; int position;
-		isarray=false;
-		while (!(la->kind == 0 || la->kind == 1)) {SynErr(28); Get();}
+		Name name; int position;
+		while (!(la->kind == 0 || la->kind == 1)) {SynErr(27); Get();}
 		position=ParseList.length(); 
-		VarList(isarray);
+		VarList();
 		Expect(3);
 		while (StartOf(1)) {
 			Statement();
@@ -134,39 +133,33 @@ void Parser::ConstVal() {
 		ParseList.append(name); ParseList.append(L")"); 
 }
 
-void Parser::VarList(bool & isarray) {
+void Parser::VarList() {
 		Name name; int position; 
-		isarray=false; position=ParseList.length(); 
+		position=ParseList.length(); 
 		Ident(name);
 		if (IsDeclaredGlobal(name))  AlreadyErr(name) ; 
-		if (la->kind == 4) {
+		ParseList.insert(position,L"(GVARDEF (NAME "); 
+		ParseList.append(name);
+		ParseList.append(L")) "); 
+		while (la->kind == 4) {
 			Get();
-			Expect(2);
-			isarray=true; ParseList.append(L"(GARRDEF (NAME "); 
-			ParseList.append(name); ParseList.append(L")(ASIZE "); 
-			ParseList.append(t->val); ParseList.append(L")) ") ; 
-			Expect(5);
-		}
-		ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
-		ParseList.append(isarray?L"":(name));
-		ParseList.append(isarray?L"":L")) "); 
-		while (la->kind == 6) {
-			Get();
-			VarList(isarray);
+			VarList();
 		}
 }
 
 void Parser::Statement() {
 		int position; 
-		while (!(StartOf(2))) {SynErr(29); Get();}
+		while (!(StartOf(2))) {SynErr(28); Get();}
 		position=ParseList.length(); 
 		if (la->kind == 1 || la->kind == 2) {
 			StatementExpression();
-		} else if (la->kind == 8) {
+		} else if (la->kind == 7) {
 			IfStatement();
-		} else if (la->kind == 10) {
+		} else if (la->kind == 9) {
 			LoopStatement();
-		} else SynErr(30);
+		} else if (la->kind == 5) {
+			Print();
+		} else SynErr(29);
 }
 
 void Parser::StatementExpression() {
@@ -177,11 +170,11 @@ void Parser::StatementExpression() {
 void Parser::IfStatement() {
 		int position; bool haselse;
 		haselse=false; 
-		Expect(8);
+		Expect(7);
 		position=ParseList.length(); 
 		Expression();
 		CompoundStatement();
-		if (la->kind == 9) {
+		if (la->kind == 8) {
 			Get();
 			CompoundStatement();
 			haselse=true; 
@@ -192,7 +185,22 @@ void Parser::IfStatement() {
 void Parser::LoopStatement() {
 		Name name; int position; 
 		position=ParseList.length(); 
-		Expect(10);
+		Expect(9);
+		if (la->kind == 2) {
+			ConstVal();
+		} else if (la->kind == 1) {
+			Ident(name);
+			if (!IsDeclaredGlobal(name))  UndecErr(name) ; 
+			ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );
+		} else SynErr(30);
+		CompoundStatement();
+		ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); 
+}
+
+void Parser::Print() {
+		Name name; int position; 
+		position=ParseList.length(); 
+		Expect(5);
 		if (la->kind == 2) {
 			ConstVal();
 		} else if (la->kind == 1) {
@@ -200,17 +208,17 @@ void Parser::LoopStatement() {
 			if (!IsDeclaredGlobal(name))  UndecErr(name) ; 
 			ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );
 		} else SynErr(31);
-		CompoundStatement();
-		ParseList.insert(position, L"(LOOP "); ParseList.append(L")"); 
+		ParseList.insert(position, L"(PRINT "); ParseList.append(L")"); 
+		Expect(3);
 }
 
 void Parser::CompoundStatement() {
-		Expect(7);
+		Expect(6);
 		ParseList.append(L"(BLOCK "); 
 		while (StartOf(1)) {
 			Statement();
 		}
-		Expect(7);
+		Expect(6);
 		ParseList.append(L") "); 
 }
 
@@ -223,25 +231,25 @@ void Parser::AssignmentExp() {
 		position=ParseList.length(); 
 		LogANDExp();
 		while (StartOf(3)) {
-			if (la->kind == 11) {
+			if (la->kind == 10) {
 				Get();
 				AssignmentExp();
 				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(MOV " ); 
 				ParseList.append(L") " );
-			} else if (la->kind == 12) {
+			} else if (la->kind == 11) {
 				Get();
 				AssignmentExp();
 				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(MULTMOV " ); 
 				ParseList.append(L") " );
-			} else if (la->kind == 13) {
+			} else if (la->kind == 12) {
 				Get();
 				AssignmentExp();
 				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
 				ParseList.insert(position,L"(DIVMOV " ); 
 				ParseList.append(L") " );
-			} else if (la->kind == 14) {
+			} else if (la->kind == 13) {
 				Get();
 				AssignmentExp();
 				if(!(Assignable(position))) { SemErr(L"Not assignable");} 
@@ -261,7 +269,7 @@ void Parser::LogANDExp() {
 		int position; 
 		position=ParseList.length(); 
 		EqualExp();
-		while (la->kind == 16) {
+		while (la->kind == 15) {
 			Get();
 			EqualExp();
 			ParseList.insert(position,L"(AND " ); 
@@ -273,8 +281,8 @@ void Parser::EqualExp() {
 		int position; 
 		position=ParseList.length(); 
 		RelationExp();
-		while (la->kind == 17 || la->kind == 18) {
-			if (la->kind == 17) {
+		while (la->kind == 16 || la->kind == 17) {
+			if (la->kind == 16) {
 				Get();
 				RelationExp();
 				ParseList.insert(position,L"(EQU " ); 
@@ -293,17 +301,17 @@ void Parser::RelationExp() {
 		position=ParseList.length(); 
 		AddExp();
 		while (StartOf(4)) {
-			if (la->kind == 19) {
+			if (la->kind == 18) {
 				Get();
 				AddExp();
 				ParseList.insert(position,L"(LESSTHAN " ); 
 				ParseList.append(L") " );
-			} else if (la->kind == 20) {
+			} else if (la->kind == 19) {
 				Get();
 				AddExp();
 				ParseList.insert(position,L"(GREATERTHAN " ); 
 				ParseList.append(L") " );
-			} else if (la->kind == 21) {
+			} else if (la->kind == 20) {
 				Get();
 				AddExp();
 				ParseList.insert(position,L"(LESSEQUTHAN " ); 
@@ -321,8 +329,8 @@ void Parser::AddExp() {
 		int position; 
 		position=ParseList.length(); 
 		MultExp();
-		while (la->kind == 23 || la->kind == 24) {
-			if (la->kind == 23) {
+		while (la->kind == 22 || la->kind == 23) {
+			if (la->kind == 22) {
 				Get();
 				MultExp();
 				ParseList.insert(position,L"(ADD " ); 
@@ -340,8 +348,8 @@ void Parser::MultExp() {
 		int position; 
 		position=ParseList.length(); 
 		PostFixExp();
-		while (la->kind == 25 || la->kind == 26) {
-			if (la->kind == 25) {
+		while (la->kind == 24 || la->kind == 25) {
+			if (la->kind == 24) {
 				Get();
 				PostFixExp();
 				ParseList.insert(position,L"(MUL " ); 
@@ -359,13 +367,6 @@ void Parser::PostFixExp() {
 		int position; 
 		position=ParseList.length(); 
 		Primary();
-		while (la->kind == 4) {
-			Get();
-			Expression();
-			Expect(5);
-			ParseList.insert(position,L"(INDEX " ); 
-			ParseList.append(L") " );
-		}
 }
 
 void Parser::Primary() {
@@ -480,7 +481,7 @@ void Parser::Parse() {
 }
 
 Parser::Parser(Scanner *scanner) {
-	maxT = 27;
+	maxT = 26;
 
 	ParserInitCaller<Parser>::CallInit(this);
 	dummyToken = NULL;
@@ -495,12 +496,12 @@ bool Parser::StartOf(int s) {
 	const bool T = true;
 	const bool x = false;
 
-	static bool set[5][29] = {
-		{T,T,T,x, x,x,x,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,T,T,x, x,x,x,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{T,T,T,x, x,x,x,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,x, x,x,x,x, x}
+	static bool set[5][28] = {
+		{T,T,T,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{x,T,T,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{T,T,T,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,x,x, x,x,x,x}
 	};
 
 
@@ -525,34 +526,34 @@ void Errors::SynErr(int line, int col, int n) {
 			case 1: s = coco_string_create(L"ident expected"); break;
 			case 2: s = coco_string_create(L"broj expected"); break;
 			case 3: s = coco_string_create(L"\"-\" expected"); break;
-			case 4: s = coco_string_create(L"\"/,\" expected"); break;
-			case 5: s = coco_string_create(L"\",/\" expected"); break;
-			case 6: s = coco_string_create(L"\",\" expected"); break;
-			case 7: s = coco_string_create(L"\"/\" expected"); break;
-			case 8: s = coco_string_create(L"\"+\" expected"); break;
-			case 9: s = coco_string_create(L"\"++\" expected"); break;
-			case 10: s = coco_string_create(L"\"*\" expected"); break;
-			case 11: s = coco_string_create(L"\"01\" expected"); break;
-			case 12: s = coco_string_create(L"\"014\" expected"); break;
-			case 13: s = coco_string_create(L"\"015\" expected"); break;
-			case 14: s = coco_string_create(L"\"012\" expected"); break;
-			case 15: s = coco_string_create(L"\"013\" expected"); break;
-			case 16: s = coco_string_create(L"\"09\" expected"); break;
-			case 17: s = coco_string_create(L"\"011\" expected"); break;
-			case 18: s = coco_string_create(L"\"018\" expected"); break;
-			case 19: s = coco_string_create(L"\"06\" expected"); break;
-			case 20: s = coco_string_create(L"\"07\" expected"); break;
-			case 21: s = coco_string_create(L"\"016\" expected"); break;
-			case 22: s = coco_string_create(L"\"017\" expected"); break;
-			case 23: s = coco_string_create(L"\"02\" expected"); break;
-			case 24: s = coco_string_create(L"\"03\" expected"); break;
-			case 25: s = coco_string_create(L"\"04\" expected"); break;
-			case 26: s = coco_string_create(L"\"05\" expected"); break;
-			case 27: s = coco_string_create(L"??? expected"); break;
-			case 28: s = coco_string_create(L"this symbol not expected in Definition"); break;
-			case 29: s = coco_string_create(L"this symbol not expected in Statement"); break;
-			case 30: s = coco_string_create(L"invalid Statement"); break;
-			case 31: s = coco_string_create(L"invalid LoopStatement"); break;
+			case 4: s = coco_string_create(L"\",\" expected"); break;
+			case 5: s = coco_string_create(L"\"000\" expected"); break;
+			case 6: s = coco_string_create(L"\"/\" expected"); break;
+			case 7: s = coco_string_create(L"\"+\" expected"); break;
+			case 8: s = coco_string_create(L"\"++\" expected"); break;
+			case 9: s = coco_string_create(L"\"*\" expected"); break;
+			case 10: s = coco_string_create(L"\"01\" expected"); break;
+			case 11: s = coco_string_create(L"\"014\" expected"); break;
+			case 12: s = coco_string_create(L"\"015\" expected"); break;
+			case 13: s = coco_string_create(L"\"012\" expected"); break;
+			case 14: s = coco_string_create(L"\"013\" expected"); break;
+			case 15: s = coco_string_create(L"\"09\" expected"); break;
+			case 16: s = coco_string_create(L"\"011\" expected"); break;
+			case 17: s = coco_string_create(L"\"018\" expected"); break;
+			case 18: s = coco_string_create(L"\"06\" expected"); break;
+			case 19: s = coco_string_create(L"\"07\" expected"); break;
+			case 20: s = coco_string_create(L"\"016\" expected"); break;
+			case 21: s = coco_string_create(L"\"017\" expected"); break;
+			case 22: s = coco_string_create(L"\"02\" expected"); break;
+			case 23: s = coco_string_create(L"\"03\" expected"); break;
+			case 24: s = coco_string_create(L"\"04\" expected"); break;
+			case 25: s = coco_string_create(L"\"05\" expected"); break;
+			case 26: s = coco_string_create(L"??? expected"); break;
+			case 27: s = coco_string_create(L"this symbol not expected in Definition"); break;
+			case 28: s = coco_string_create(L"this symbol not expected in Statement"); break;
+			case 29: s = coco_string_create(L"invalid Statement"); break;
+			case 30: s = coco_string_create(L"invalid LoopStatement"); break;
+			case 31: s = coco_string_create(L"invalid Print"); break;
 			case 32: s = coco_string_create(L"invalid Primary"); break;
 
 		default:

@@ -602,15 +602,20 @@ else if (nodename== L"LOOP") {
 		ispis << L" JNZ LOOPSTART" << nova << endl;		
 	}
 }
-
-
-
-
-
-
-else if (nodename== L"INDEX") { }
-else if (nodename== L"ASIZE") { }
-else if (nodename== L"GARRDEF") { }
+else if (nodename== L"PRINT") { 
+	z=ElemPos(position,1);
+	if (GetNodeName(z)==L"BROJ")
+	{
+		ispis << L" MOV EAX," << GetElemName(z,1) << endl;
+		ispis << L" CALL print_int" << endl;
+	}
+	else
+	if (GetNodeName(z)==L"VAR")
+	{
+		ispis << L" MOV EAX,[v" << GetElemName(z,1) << "]" << endl;
+		ispis << L" CALL print_int" << endl;		
+	}
+}
 }
 
 

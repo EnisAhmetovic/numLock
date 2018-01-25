@@ -447,15 +447,15 @@ Scanner::~Scanner() {
 void Scanner::Init() {
 	EOL    = '\n';
 	eofSym = 0;
-	maxT = 27;
-	noSym = 27;
+	maxT = 26;
+	noSym = 26;
 	int i;
 	for (i = 48; i <= 48; ++i) start.set(i, 24);
-	for (i = 49; i <= 57; ++i) start.set(i, 3);
-	start.set(45, 4);
-	start.set(47, 25);
-	start.set(44, 26);
-	start.set(43, 27);
+	for (i = 49; i <= 57; ++i) start.set(i, 2);
+	start.set(45, 3);
+	start.set(44, 4);
+	start.set(47, 6);
+	start.set(43, 25);
 	start.set(42, 8);
 		start.set(Buffer::EoF, -1);
 
@@ -595,7 +595,7 @@ void Scanner::AppendVal(Token *t) {
 
 Token* Scanner::NextToken() {
 	while (ch == ' ' ||
-			ch == 10 || ch == 13
+			(ch >= 9 && ch <= 10) || ch == 13
 	) NextCh();
 	if ((ch == L',' && Comment0())) return NextToken();
 	int recKind = noSym;
@@ -617,79 +617,76 @@ Token* Scanner::NextToken() {
 		} // NextCh already done
 		case 1:
 			case_1:
-			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_2;}
-			else {goto case_0;}
+			recEnd = pos; recKind = 1;
+			if ((ch >= L'0' && ch <= L'9')) {AddCh(); goto case_1;}
+			else {t->kind = 1; break;}
 		case 2:
 			case_2:
-			recEnd = pos; recKind = 1;
-			if ((ch >= L'0' && ch <= L'9')) {AddCh(); goto case_2;}
-			else {t->kind = 1; break;}
-		case 3:
-			case_3:
 			recEnd = pos; recKind = 2;
-			if ((ch >= L'0' && ch <= L'9')) {AddCh(); goto case_3;}
+			if ((ch >= L'0' && ch <= L'9')) {AddCh(); goto case_2;}
 			else {t->kind = 2; break;}
-		case 4:
+		case 3:
 			{t->kind = 3; break;}
+		case 4:
+			{t->kind = 4; break;}
 		case 5:
 			case_5:
-			{t->kind = 4; break;}
-		case 6:
-			case_6:
 			{t->kind = 5; break;}
+		case 6:
+			{t->kind = 6; break;}
 		case 7:
 			case_7:
-			{t->kind = 9; break;}
+			{t->kind = 8; break;}
 		case 8:
-			{t->kind = 10; break;}
+			{t->kind = 9; break;}
 		case 9:
 			case_9:
-			{t->kind = 12; break;}
+			{t->kind = 11; break;}
 		case 10:
 			case_10:
-			{t->kind = 13; break;}
+			{t->kind = 12; break;}
 		case 11:
 			case_11:
-			{t->kind = 14; break;}
+			{t->kind = 13; break;}
 		case 12:
 			case_12:
-			{t->kind = 15; break;}
+			{t->kind = 14; break;}
 		case 13:
 			case_13:
-			{t->kind = 16; break;}
+			{t->kind = 15; break;}
 		case 14:
 			case_14:
-			{t->kind = 17; break;}
+			{t->kind = 16; break;}
 		case 15:
 			case_15:
-			{t->kind = 18; break;}
+			{t->kind = 17; break;}
 		case 16:
 			case_16:
-			{t->kind = 19; break;}
+			{t->kind = 18; break;}
 		case 17:
 			case_17:
-			{t->kind = 20; break;}
+			{t->kind = 19; break;}
 		case 18:
 			case_18:
-			{t->kind = 21; break;}
+			{t->kind = 20; break;}
 		case 19:
 			case_19:
-			{t->kind = 22; break;}
+			{t->kind = 21; break;}
 		case 20:
 			case_20:
-			{t->kind = 23; break;}
+			{t->kind = 22; break;}
 		case 21:
 			case_21:
-			{t->kind = 24; break;}
+			{t->kind = 23; break;}
 		case 22:
 			case_22:
-			{t->kind = 25; break;}
+			{t->kind = 24; break;}
 		case 23:
 			case_23:
-			{t->kind = 26; break;}
+			{t->kind = 25; break;}
 		case 24:
-			if (ch == L'0') {AddCh(); goto case_1;}
-			else if (ch == L'1') {AddCh(); goto case_28;}
+			if (ch == L'0') {AddCh(); goto case_26;}
+			else if (ch == L'1') {AddCh(); goto case_27;}
 			else if (ch == L'9') {AddCh(); goto case_13;}
 			else if (ch == L'6') {AddCh(); goto case_16;}
 			else if (ch == L'7') {AddCh(); goto case_17;}
@@ -700,19 +697,16 @@ Token* Scanner::NextToken() {
 			else {goto case_0;}
 		case 25:
 			recEnd = pos; recKind = 7;
-			if (ch == L',') {AddCh(); goto case_5;}
+			if (ch == L'+') {AddCh(); goto case_7;}
 			else {t->kind = 7; break;}
 		case 26:
-			recEnd = pos; recKind = 6;
-			if (ch == L'/') {AddCh(); goto case_6;}
-			else {t->kind = 6; break;}
+			case_26:
+			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_1;}
+			else if (ch == L'0') {AddCh(); goto case_5;}
+			else {goto case_0;}
 		case 27:
-			recEnd = pos; recKind = 8;
-			if (ch == L'+') {AddCh(); goto case_7;}
-			else {t->kind = 8; break;}
-		case 28:
-			case_28:
-			recEnd = pos; recKind = 11;
+			case_27:
+			recEnd = pos; recKind = 10;
 			if (ch == L'4') {AddCh(); goto case_9;}
 			else if (ch == L'5') {AddCh(); goto case_10;}
 			else if (ch == L'2') {AddCh(); goto case_11;}
@@ -721,7 +715,7 @@ Token* Scanner::NextToken() {
 			else if (ch == L'8') {AddCh(); goto case_15;}
 			else if (ch == L'6') {AddCh(); goto case_18;}
 			else if (ch == L'7') {AddCh(); goto case_19;}
-			else {t->kind = 11; break;}
+			else {t->kind = 10; break;}
 
 	}
 	AppendVal(t);

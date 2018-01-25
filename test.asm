@@ -1,18 +1,14 @@
+%include "asm_io.inc"
 section .data
  v005 DD 0
- v001 DD 0
 
-%include "asm_io.inc"
 section .text
  global _start
 _start:
- MOV EAX, [v005]
- PUSH EAX
- MOV EAX, [v005]
- ADD EAX,42
- POP EBX
- ADD EAX,EBX
- MOV [v005],EAX
+ MOV EAX,[v005]
+ CALL print_int
+ MOV EAX,1
+ CALL print_int
 INT 80h
 MOV EAX,1
 MOV EBX,0

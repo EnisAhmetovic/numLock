@@ -168,7 +168,7 @@ else if (nodename== L"ADDMOV") {
 		Compile(q,brojac,ispis,data);
 		ispis << L" POP EBX"<< endl;
 		ispis << L" ADD EAX,EBX"<< endl;
-		ispis << L" MOV [EBX],EAX"<< endl;
+		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;
 	}
 	
 }
@@ -602,15 +602,19 @@ else if (nodename== L"LOOP") {
 		ispis << L" JNZ LOOPSTART" << nova << endl;		
 	}
 }
+else if (nodename== L"PRINT") { 
+	z=ElemPos(position,1);
+	if (GetNodeName(z)==L"BROJ")
+	{
+		ispis << L" MOV EAX," << GetElemName(z,1) << endl;
 
-
-
-
-
-
-else if (nodename== L"INDEX") { }
-else if (nodename== L"ASIZE") { }
-else if (nodename== L"GARRDEF") { }
+	}
+	else
+	if (GetNodeName(z)==L"VAR")
+	{
+		ispis << L" MOV EAX,[v" << GetElemName(z,1) << "]" << endl;		
+	}
+}
 }
 
 

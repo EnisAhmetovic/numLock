@@ -24,7 +24,7 @@ TOKENS
 
   COMMENTS FROM ",," TO wr nr
 
-  IGNORE wr + nr
+  IGNORE wr + nr + '\t'
 
 
 
@@ -34,7 +34,7 @@ PRODUCTIONS
   numLock = 	(. ParseList=L"(NUMLOCK "; scopepos=0; .)
 	{ Definition }  
 	EOF 	(. ParseList+=L")"; wstringstream data; wstringstream text;
-		text << "%include \"asm_io.inc\"" << endl;		
+		data << "%include \"asm_io.inc\"" << endl;		
 		text << L"section .text" << endl;
 		text << L" global _start" << endl << L"_start:" << endl;	
 		data << L"section .data" << endl;
@@ -55,33 +55,33 @@ PRODUCTIONS
 	 broj (. wcscpy(name, t->val); ParseList.append(L"(BROJ ");
 		ParseList.append(name); ParseList.append(L")"); .) .
 
-  Definition  (. Name name; bool isarray; int position;.)
-  =  (. isarray=false;.)
+  Definition  (. Name name; int position;.)
+  = 
   SYNC  (. position=ParseList.length(); .) 
-  VarList<isarray> '-' {Statement} .
+  VarList '-' {Statement} .
 
 
-  VarList<bool & isarray> (. Name name; int position; .) 
-	= (. isarray=false; position=ParseList.length(); .) 
-      Ident<name> (. if (IsDeclaredGlobal(name))  AlreadyErr(name) ; .)
-      [ "/," broj  
-                   (. isarray=true; ParseList.append(L"(GARRDEF (NAME "); 
-                    ParseList.append(name); ParseList.append(L")(ASIZE "); 
-                    ParseList.append(t->val); ParseList.append(L")) ") ; .)
-		
-      ",/" ]  
-	(. ParseList.insert(position,isarray?L"":L"(GVARDEF (NAME ") ; 
-	ParseList.append(isarray?L"":(name));
-	ParseList.append(isarray?L"":L")) "); .) 
-      
-	{',' VarList<isarray>  } .
+  VarList (. Name name; int position; .) 
+	= (. position=ParseList.length(); .) 
+      Ident<name> (. if (IsDeclaredGlobal(name))  AlreadyErr(name) ; .)      
+	(. ParseList.insert(position,L"(GVARDEF (NAME "); 
+	ParseList.append(name);
+	ParseList.append(L")) "); .)       
+	{',' VarList } .
       
 
   Statement (. int position; .)
   = SYNC (. position=ParseList.length(); .) 
   ( StatementExpression 
                     | IfStatement 
-                    | LoopStatement ) .
+                    | LoopStatement 
+		    | Print) .
+
+  Print (. Name name; int position; .)
+	= (. position=ParseList.length(); .)
+	"000" (ConstVal | Ident<name> (. if (!IsDeclaredGlobal(name))  UndecErr(name) ; .)
+	(. ParseList.append(L"(VAR " );ParseList.append(name );ParseList.append(L")" );.))
+	(. ParseList.insert(position, L"(PRINT "); ParseList.append(L")"); .) '-'.
 
   CompoundStatement    = '/' (. ParseList.append(L"(BLOCK "); .)
                      { Statement } '/'  (. ParseList.append(L") "); .).
@@ -177,9 +177,7 @@ PRODUCTIONS
 
   PostFixExp   (. int position; .)        
    = (. position=ParseList.length(); .)
-   Primary  { "/," Expression ",/" 
-                (. ParseList.insert(position,L"(INDEX " ); .)
-                (. ParseList.append(L") " );.) } .
+   Primary .
 
   Primary (. Name name; int position; .)
               = Ident<name>  
