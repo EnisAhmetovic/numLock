@@ -95,7 +95,7 @@ void Parser::numLock() {
 		}
 		Expect(0);
 		ParseList+=L")"; wstringstream data; wstringstream text;
-		text << "%include \"asm_io.inc\"" << endl;		
+		data << "%include \"asm_io.inc\"" << endl;		
 		text << L"section .text" << endl;
 		text << L" global _start" << endl << L"_start:" << endl;	
 		data << L"section .data" << endl;

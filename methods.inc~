@@ -216,20 +216,25 @@ else if (nodename== L"DIV") {
 	  if(GetElemName(q,1) == L"0")
 		SemErr(L"Dijenjenje s nulom");
 	  else
-          ispis << L" DIV EAX,"<< GetElemName(q,1)<< endl ;
+	{
+	  ispis << L" MOV EDX, 0" << endl;
+          ispis << L" MOV ECX,"<< GetElemName(q,1)<< endl ;
+	  ispis << L" DIV ECX" << endl;
+	}
     }
     else
     if (GetNodeName(q)==L"VAR")
     {
-		//provjeri dijeljenje s nulom	  
-          ispis << L" DIV EAX,[v" << GetElemName(q,1)<<"]"<< endl;
+	  ispis << L" MOV EDX, 0" << endl;
+          ispis << L" DIV ECX,[v" << GetElemName(q,1)<<"]"<< endl;
+	  ispis << L" DIV ECX" << endl;
     }
     else
     {
         ispis << L" PUSH EAX";
         Compile(q,brojac,ispis,data);
-        ispis << L" POP EBX";
-        ispis << L" DIV EAX,EBX"<< endl;
+        ispis << L" POP ECX";
+        ispis << L" DIV ECX"<< endl;
     }
 }
 else if (nodename== L"DIVMOV") {
@@ -241,23 +246,28 @@ else if (nodename== L"DIVMOV") {
 		if(GetElemName(q,1) == L"0")
 			SemErr(L"Dijenjenje s nulom");
 		else {
-			ispis << L" DIV EAX,"<< GetElemName(q,1)<< endl ;
-			ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;	
+
+			  ispis << L" MOV EDX, 0" << endl;
+			  ispis << L" MOV ECX,"<< GetElemName(q,1)<< endl ;
+			  ispis << L" DIV ECX" << endl;
+			  ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;	
 		}
 	}
 	else
 	if (GetNodeName(q)==L"VAR")
 	{
-		ispis << L" DIV EAX,[v" << GetElemName(q,1)<<"]"<< endl;
+		ispis << L" MOV EDX, 0" << endl;
+		ispis << L" DIV ECX,[v" << GetElemName(q,1)<<"]"<< endl;
+		ispis << L" DIV ECX" << endl;
 		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;		
 	}
 	else
 	{
 		ispis << L" PUSH EAX"<< endl;
 		Compile(q,brojac,ispis,data);
-		ispis << L" POP EBX"<< endl;
-		ispis << L" DIV EAX,EBX"<< endl;
-		ispis << L" MOV [EBX],EAX"<< endl;
+		ispis << L" POP ECX"<< endl;
+		ispis << L" DIV ECX"<< endl;
+		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;
 	}
 }
 else if (nodename== L"EQU") { 
@@ -456,19 +466,21 @@ else if (nodename== L"MUL") {
     Compile(z,brojac,ispis,data);
     if (GetNodeName(q)==L"BROJ")
     {
-          ispis << L" MUL EAX,"<< GetElemName(q,1)<< endl ;
+          ispis << L" MOV ECX,"<< GetElemName(q,1)<< endl ;
+	  ispis << L" MUL ECX" << endl;
     }
     else
     if (GetNodeName(q)==L"VAR")
     {
-          ispis << L" MUL EAX,[v" << GetElemName(q,1)<<"]"<< endl;
+          ispis << L" MOV ECX,[v" << GetElemName(q,1)<<"]"<< endl;
+	  ispis << L" MUL ECX" << endl;
     }
     else
     {
         ispis << L" PUSH EAX";
         Compile(q,brojac,ispis,data);
-        ispis << L" POP EBX";
-        ispis << L" MUL EAX,EBX"<< endl;
+        ispis << L" POP ECX";
+        ispis << L" MUL ECX"<< endl;
     }
 }
 else if (nodename== L"MULTMOV") { 
@@ -477,22 +489,24 @@ else if (nodename== L"MULTMOV") {
 	Compile(z,brojac,ispis,data);
 	if (GetNodeName(q)==L"BROJ")
 	{
-		ispis << L" MUL EAX,"<< GetElemName(q,1)<< endl ;
+		ispis << L" MOV ECX,"<< GetElemName(q,1)<< endl ;
+	  	ispis << L" MUL ECX" << endl;
 		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;	
 	}
 	else
 	if (GetNodeName(q)==L"VAR")
 	{
-		ispis << L" MUL EAX,[v" << GetElemName(q,1)<<"]"<< endl;
+		ispis << L" MOV ECX,"<< GetElemName(q,1)<< endl ;
+	  	ispis << L" MUL ECX" << endl;
 		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;		
 	}
 	else
 	{
 		ispis << L" PUSH EAX"<< endl;
 		Compile(q,brojac,ispis,data);
-		ispis << L" POP EBX"<< endl;
-		ispis << L" MUL EAX,EBX"<< endl;
-		ispis << L" MOV [EBX],EAX"<< endl;
+		ispis << L" POP ECX"<< endl;
+		ispis << L" MUL ECX"<< endl;
+		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;
 	}
 }
 else if (nodename== L"NEQU") { 
@@ -561,7 +575,7 @@ else if (nodename== L"SUBMOV") {
 		Compile(q,brojac,ispis,data);
 		ispis << L" POP EBX"<< endl;
 		ispis << L" SUB EAX,EBX"<< endl;
-		ispis << L" MOV [EBX],EAX"<< endl;
+		ispis << L" MOV [v" << GetElemName(z,1) <<"],EAX"<< endl;
 	}
 }
 else if (nodename== L"VAR") {
@@ -604,15 +618,43 @@ else if (nodename== L"LOOP") {
 }
 else if (nodename== L"PRINT") { 
 	z=ElemPos(position,1);
-	if (GetNodeName(z)==L"BROJ")
-	{
-		ispis << L" MOV EAX," << GetElemName(z,1) << endl;
-
-	}
-	else
 	if (GetNodeName(z)==L"VAR")
 	{
-		ispis << L" MOV EAX,[v" << GetElemName(z,1) << "]" << endl;		
+		ispis << L" MOV CX,0" << endl;
+		ispis << L" MOV EAX,[v" << GetElemName(z,1) << "]" << endl;
+		ispis << L" MOV EDX,-900" << endl;
+		ispis << L" PUSH EDX" << endl;
+		ispis << L"LOOP"<< brojac <<":" << endl;
+		ispis << L" MOV EDX,0" << endl;
+		ispis << L" MOV ECX,10" << endl;
+		ispis << L" DIV ECX" << endl;
+		ispis << L" ADD CX, 1" << endl;
+		ispis << L" PUSH EDX" << endl;
+		ispis << L" CMP EAX,0" << endl;
+		ispis << L" JNE LOOP" << brojac << endl;
+		brojac++;
+		ispis << L"LOOP"<< brojac <<": " << endl;	
+		ispis << L" POP DWORD [v" << GetElemName(z,1) << "]" << endl;	
+		ispis << L" CMP DWORD [v" << GetElemName(z,1) << "], -900" << endl;
+		ispis << L" JE KRAJISPISA"<< brojac << endl;
+		ispis << L" ADD DWORD [v" << GetElemName(z,1) << "], 48" << endl;	
+		ispis << L" MOV EAX,4" << endl;	
+		ispis << L" MOV EBX,1" << endl;	
+		ispis << L" MOV ECX,v" << GetElemName(z,1) << endl;	
+		ispis << L" MOV EDX,1" << endl;	
+		ispis << L" INT 0x80" << endl;	
+		ispis << L" SUB CX,1" << endl;	
+		ispis << L" SUB DWORD [v" << GetElemName(z,1) << "], 48" << endl;	
+		ispis << L" CMP DWORD [v" << GetElemName(z,1) << "], -900" << endl;
+		ispis << L" JNE LOOP"<< brojac << endl;
+		ispis << L"KRAJISPISA"<< brojac << ":" << endl;	
+		ispis << L" MOV DWORD [v" << GetElemName(z,1) << "], 32" << endl;
+		ispis << L" MOV EAX,4" << endl;	
+		ispis << L" MOV EBX,1" << endl;	
+		ispis << L" MOV ECX,v" << GetElemName(z,1) << endl;	
+		ispis << L" MOV EDX,1" << endl;	
+		ispis << L" INT 0x80" << endl;	
+		brojac++;
 	}
 }
 }
